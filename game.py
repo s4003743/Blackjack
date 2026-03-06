@@ -3,18 +3,10 @@ import random
 from player import Player
 from comp import Comp
 from play import Hand
+from play import generate_deck
 
 PLAYER_WEALTH = 10**4
 BET_SIZE = 10**2
-
-
-def generate_deck(num_decks=6):
-    deck_vals = ['2','3','4','5','6','7','8','9','T','J','Q','K','A']
-    suits = ['♥️', '♠️', '♦️', '♣️']
-
-    deck = [v+s for v in deck_vals for s in suits] * num_decks
-    random.shuffle(deck)
-    return deck
 
 
 class BlackjackGame:
