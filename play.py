@@ -3,7 +3,7 @@ import time
 from collections import deque
 from rich import print
 from player import Player
-from dealer import Dealer
+from comp import Comp
 
 
 PLAYER_WEALTH = 10**4
@@ -78,6 +78,7 @@ class Hand:
 def play():
     deck = deque(generate_deck())
     player = Player(PLAYER_WEALTH)
+    comp = Comp(len(deck) // 52)
 
     while len(deck) > 52:
 
@@ -87,6 +88,7 @@ def play():
         dealer_hand = Hand(0)
 
         print("\n--- NEW GAME ---\n")
+        comp.suggest_action()
         print(f"Current Wealth: {player.wealth}\n")
 
         # Initial deal
@@ -108,9 +110,19 @@ def play():
             # Offer split if possible
             if hand.can_split():
                 print(f"\nHand {i+1}: {hand}")
-                split = input("Split? (y/n): ").lower()
+
+                split = None
+                while split != 'y' and split != 'n':
+                    split = input("Split? (y/n): ").lower()
 
                 if split == 'y':
+                    if player.wealth < BET_SIZE:
+                        print("Not enough money to split.")
+                        i += 1
+                        continue
+
+                    player.place_bet(BET_SIZE)
+
                     new_hand = Hand(BET_SIZE)
 
                     # Move second card to new hand
@@ -137,7 +149,10 @@ def play():
             while not hand.is_busted():
 
                 print(hand)
-                move = input("Hit or Stand (h/s): ").lower()
+
+                move = None
+                while move != 'h' and move != 's':
+                    move = input("Hit or Stand (h/s): ").lower()
 
                 if move == 'h':
                     hand.add_card(deck)
@@ -168,6 +183,13 @@ def play():
         # -------------------------
 
         player.resolve_hand(dealer_score, dealer_hand)
+
+        for card in dealer_hand.cards:
+            comp.cards_seen.append(card[0])
+        
+        for hand in player.hands:
+            for card in hand.cards:
+                comp.cards_seen.append(card[0])
 
 
 if __name__ == "__main__":
