@@ -2,6 +2,8 @@ import random
 import time
 from collections import deque
 from rich import print
+from player import Player
+from dealer import Dealer
 
 
 PLAYER_WEALTH = 10**4
@@ -75,18 +77,21 @@ class Hand:
 
 def play():
     deck = deque(generate_deck())
+    player = Player(PLAYER_WEALTH)
 
     while len(deck) > 52:
 
-        print("\n--- NEW GAME ---\n")
-
         # Create player + dealer hands
-        player_hands = [Hand(BET_SIZE)]
+        player.hands = [Hand(BET_SIZE)]
+        player.place_bet(BET_SIZE)
         dealer_hand = Hand(0)
+
+        print("\n--- NEW GAME ---\n")
+        print(f"Current Wealth: {player.wealth}\n")
 
         # Initial deal
         for _ in range(2):
-            player_hands[0].add_card(deck)
+            player.hands[0].add_card(deck)
             dealer_hand.add_card(deck)
 
         print(f"Dealer showing: {dealer_hand.cards[0]}")
@@ -96,9 +101,9 @@ def play():
         # -------------------------
 
         i = 0
-        while i < len(player_hands):
+        while i < len(player.hands):
 
-            hand = player_hands[i]
+            hand = player.hands[i]
 
             # Offer split if possible
             if hand.can_split():
@@ -115,7 +120,7 @@ def play():
                     hand.add_card(deck)
                     new_hand.add_card(deck)
 
-                    player_hands.append(new_hand)
+                    player.hands.append(new_hand)
 
                     continue  # re-evaluate this hand
 
@@ -125,7 +130,7 @@ def play():
         # Play Each Player Hand
         # -------------------------
 
-        for idx, hand in enumerate(player_hands):
+        for idx, hand in enumerate(player.hands):
 
             print(f"\n--- Playing Hand {idx+1} ---")
 
@@ -162,23 +167,7 @@ def play():
         # Resolve Hands
         # -------------------------
 
-        for idx, hand in enumerate(player_hands):
-
-            player_score = hand.value()
-
-            print(f"\nResult for Hand {idx+1}:")
-            print(f"Player: {player_score} | Dealer: {dealer_score}")
-
-            if hand.is_busted():
-                print("Lose")
-            elif dealer_hand.is_busted():
-                print("Win")
-            elif player_score > dealer_score:
-                print("Win")
-            elif player_score < dealer_score:
-                print("Lose")
-            else:
-                print("Push")
+        player.resolve_hand(dealer_score, dealer_hand)
 
 
 if __name__ == "__main__":

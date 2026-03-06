@@ -1,4 +1,4 @@
 
 class Dealer():
-    def __init__(self, wealth) -> None:
-        self.wealth = wealth
+    def __init__(self) -> None:
+        self.hand = None
